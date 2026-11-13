@@ -43,7 +43,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/VoiceInk-Dependencies
-          key: whisper-${{ runner.os }}-${{ steps.whisper.outputs.sha }}
+          key: whisper-macos-only-${{ hashFiles('scripts/ci/whisper-macos-only.py') }}-${{ steps.whisper.outputs.sha }}
 
       - name: Build whisper.xcframework
         if: steps.whisper-cache.outputs.cache-hit != 'true'
@@ -52,6 +52,8 @@ jobs:
           git clone https://github.com/ggml-org/whisper.cpp.git ~/VoiceInk-Dependencies/whisper.cpp
           cd ~/VoiceInk-Dependencies/whisper.cpp
           git checkout ${{ steps.whisper.outputs.sha }}
+          # Build only the macOS slice (skip iOS / visionOS / tvOS)
+          python3 -I "$GITHUB_WORKSPACE/scripts/ci/whisper-macos-only.py" build-xcframework.sh
           ./build-xcframework.sh
 
       - name: Build app (ad-hoc signed)
